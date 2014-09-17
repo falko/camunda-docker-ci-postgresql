@@ -1,15 +1,15 @@
-camunda-docker-ci-mysql
-=======================
+camunda-docker-ci-postgresql
+============================
 
-MySQL docker image for Jenkins CI builds base on [camunda-docker-ci-base][].
+PostgreSQL docker image for Jenkins CI builds base on [camunda-docker-ci-base][].
 
 # Additional Packages
 
-  - mysql server
+  - postgresql server 9.3
 
-# MySQL User
+# PostgresSQL User
 
-  - `root` without password
+  - `postgres` without password
   - `camunda` with password `camunda`
 
 # Database
