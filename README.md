@@ -20,7 +20,7 @@ PostgreSQL docker image for Jenkins CI builds base on [camunda-docker-ci-base][]
 
 ```
 # Start docker container
-docker run -d -P 5432:5432 camunda/camunda-docker-ci-postgresql
+docker run -d -p 5432:5432 camunda/camunda-docker-ci-postgresql
 ```
 
 [camunda-docker-ci-base]: https://github.com/camunda-ci/camunda-docker-ci-base
