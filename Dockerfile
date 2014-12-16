@@ -1,17 +1,34 @@
-FROM camunda/camunda-docker-ci-base
-MAINTAINER Sebastian Menski <sebastian.menski@camunda.com>
+FROM camunda/camunda-ci-base-ubuntu
 
-# add build files
-ADD . /build
+# set environment variables for database
+ENV POSTGRESQL_VERSION 9.3
+ENV DB_USERNAME camunda
+ENV DB_PASSWORD camunda
+ENV DB_NAME process-engine
+RUN save-env.sh POSTGRESQL_VERSION DB_USERNAME DB_PASSWORD DB_NAME
 
 # install packages
-RUN /build/bin/install-packages.sh postgresql
+RUN install-packages.sh postgresql-$POSTGRESQL_VERSION
 
-# configure postgresql
-RUN /build/bin/configure-postgresql.sh camunda camunda process-engine
+# add postgresql config
+ADD etc/postgresql/* /etc/postgresql/$POSTGRESQL_VERSION/main/
+
+# workaround for aufs bug (https://github.com/docker/docker/issues/783)
+RUN mkdir /etc/ssl/private-new && \
+    mv /etc/ssl/private/* /etc/ssl/private-new/ && \
+    rm -rf /etc/ssl/private && \
+    mv /etc/ssl/private-new /etc/ssl/private && \
+    chown -R root:ssl-cert /etc/ssl/private
+
+# add postgresql user and create database
+RUN chown -R postgres:postgres /etc/postgresql/$POSTGRESQL_VERSION/main/* && \
+    service postgresql start && \
+    sudo -u postgres psql --command "CREATE USER $DB_USERNAME WITH SUPERUSER PASSWORD '$DB_PASSWORD';" && \
+    sudo -u postgres createdb --owner=$DB_USERNAME --template=template0 --encoding=UTF8 $DB_NAME && \
+    service postgresql stop
 
 # add postgresql service to supervisor conifg
-RUN cat /build/etc/supervisord-postgresql.conf >> /etc/supervisor/conf.d/supervisord.conf
+ADD etc/supervisor.d/postgresql.conf /etc/supervisor/conf.d/postgresql.conf
 
 # expose postgresql port
 EXPOSE 5432
