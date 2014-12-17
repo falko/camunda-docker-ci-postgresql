@@ -1,7 +1,7 @@
 FROM camunda/camunda-ci-base-ubuntu
 
 # set environment variables for database
-ENV POSTGRESQL_VERSION=9.3 DB_USERNAME=camunda DB_PASSWORD=camunda DB_NAME=process-engine
+ENV POSTGRESQL_VERSION=9.1 DB_USERNAME=camunda DB_PASSWORD=camunda DB_NAME=process-engine
 RUN save-env.sh POSTGRESQL_VERSION DB_USERNAME DB_PASSWORD DB_NAME
 
 # add postgresql apt repo

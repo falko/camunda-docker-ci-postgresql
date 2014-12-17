@@ -1,5 +1,5 @@
 IMAGE_NAME=camunda/camunda-ci-postgresql
-TAG=latest
+TAG=9.1
 IMAGE=$(IMAGE_NAME):$(TAG)
 NAME=ci-postgresql
 OPTS=--name $(NAME) -p 5432:5432 $(FLAGS)
