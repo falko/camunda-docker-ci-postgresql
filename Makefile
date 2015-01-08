@@ -1,45 +1,74 @@
-IMAGE_NAME=camunda/camunda-ci-postgresql
-TAG=9.1
-IMAGE=$(IMAGE_NAME):$(TAG)
-NAME=ci-postgresql
-OPTS=--name $(NAME) -p 5432:5432 $(FLAGS)
+# image settings for the docker image name, tags and
+# container name while running
+IMAGE_NAME=camunda-ci1:5000/camunda-ci-postgresql
+TAGS=9.1
+NAME=postgresql
 
+# parent image name
+FROM=$(shell head -n1 Dockerfile | cut -d " " -f 2)
+# the first tag and the remaining tags split up
+FIRST_TAG=$(firstword $(TAGS))
+ADDITIONAL_TAGS=$(wordlist 2, $(words $(TAGS)), $(TAGS))
+# the image name which will be build
+IMAGE=$(IMAGE_NAME):$(FIRST_TAG)
+# options to use for running the image, can be extended by FLAGS variable
+OPTS=--name $(NAME) --privileged $(FLAGS)
+# the docker command which can be configured by the DOCKER_OPTS variable
 DOCKER=docker $(DOCKER_OPTS)
+
+# default build settings
 REMOVE=true
 FORCE_RM=true
-PROXY_IP=$(shell $(DOCKER) inspect --format '{{ .NetworkSettings.IPAddress }}' http-proxy 2> /dev/null)
-PROXY_PORT=8888
-DOCKERFILE=Dockerfile
-DOCKERFILE_BAK=$(DOCKERFILE).http.proxy.bak
+NO_CACHE=false
 
-
+# build the image for the first tag and tag it for additional tags
 build:
-	$(DOCKER) build --rm=$(REMOVE) --force-rm=$(FORCE_RM) -t $(IMAGE) .
+	$(DOCKER) build --rm=$(REMOVE) --force-rm=$(FORCE_RM) --no-cache=$(NO_CACHE) -t $(IMAGE) .
+	@for tag in $(ADDITIONAL_TAGS); do \
+		$(DOCKER) tag -f $(IMAGE) $(IMAGE_NAME):$$tag; \
+	done
 
-proxy:
-ifneq ($(strip $(PROXY_IP)),)
-	cp $(DOCKERFILE) $(DOCKERFILE_BAK)
-	sed -i "2i ENV http_proxy http://$(PROXY_IP):$(PROXY_PORT)" $(DOCKERFILE)
-endif
-	-$(DOCKER) build --rm=$(REMOVE) --force-rm=$(FORCE_RM) -t $(IMAGE) .
-ifneq ($(strip $(PROXY_IP)),)
-	mv $(DOCKERFILE_BAK) $(DOCKERFILE)
-endif
+# pull image from registry
+pull:
+	-$(DOCKER) pull $(IMAGE)
 
+# pull parent image
+pull-from:
+	$(DOCKER) pull $(FROM)
+
+# push container to registry
+push:
+	@for tag in $(TAGS); do \
+		$(DOCKER) push $(IMAGE_NAME):$$tag; \
+	done
+
+# pull parent image, pull image, build image and push to repository
+publish: pull-from pull build push
+
+# run container
 run:
 	$(DOCKER) run --rm $(OPTS) $(IMAGE)
 
+# start container as daemon
 daemon:
 	$(DOCKER) run -d $(OPTS) $(IMAGE)
 
+# start container with port mapping
+stage: rmf
+	$(DOCKER) run -d $(OPTS) -p 5432:5432 $(IMAGE)
+
+# start interactive container with bash
 bash:
 	$(DOCKER) run --rm -it $(OPTS) $(IMAGE) /bin/bash
 
+# remove container by name
 rmf:
 	-$(DOCKER) rm -f $(NAME)
 
+# remove image with all tags
 rmi:
-	$(DOCKER) rmi $(IMAGE)
+	@for tag in $(TAGS); do \
+		$(DOCKER) rmi $(IMAGE_NAME):$$tag; \
+	done
 
-
-.PHONY: build run daemon bash rmf rmi proxy add-proxy rm-proxy
+.PHONY: build pull pull-from push publish run daemon stage bash rmf rmi
