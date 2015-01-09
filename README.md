@@ -24,4 +24,3 @@ docker run -d -p 5432:5432 camunda/camunda-docker-ci-postgresql
 ```
 
 [camunda-ci-base-ubuntu]: https://github.com/camunda-ci/camunda-docker-ci-base-ubuntu
-[aufs bug]: https://github.com/docker/docker/issues/783
