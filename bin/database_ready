@@ -1,0 +1,26 @@
+#!/bin/bash
+
+. /etc/profile.d/env.sh
+
+function default_cmd {
+  PGPASSWORD=$DB_PASSWORD psql --username=camunda --host=localhost --dbname=process-engine < /dev/null &> /dev/null
+}
+
+COMMAND=${1:-default_cmd}
+RETRIES=${2:-60}
+SLEEP_TIME=${3:-1}
+echo "Retrying command: ${COMMAND} with ${RETRIES} retries, sleeping ${SLEEP_TIME} seconds during executions."
+
+until ${COMMAND};
+  do
+    sleep ${SLEEP_TIME}
+    RETRIES=$(( RETRIES - 1 ))
+  if [[ $RETRIES = 0 ]]; then
+    echo "Error: Database did not start!"
+    exit 1;
+  else
+    echo "Polling database ... $RETRIES left"
+  fi
+done
+
+echo "Successfully connected to database"
