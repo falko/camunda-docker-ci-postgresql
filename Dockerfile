@@ -31,5 +31,8 @@ RUN chown -R postgres:postgres /etc/postgresql/$POSTGRESQL_VERSION/main/* && \
 # add postgresql service to supervisor conifg
 ADD etc/supervisor.d/postgresql.conf /etc/supervisor/conf.d/postgresql.conf
 
+# add database_ready script
+ADD bin/database_ready /usr/local/bin/database_ready
+
 # expose postgresql port
 EXPOSE 5432
