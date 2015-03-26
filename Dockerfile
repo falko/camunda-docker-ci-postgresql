@@ -1,35 +1,42 @@
-FROM camunda-ci1:5000/camunda-ci-base-ubuntu
+FROM camunda-ci1:5000/camunda-ci-base-centos:latest
 
 # set environment variables for database
-ENV POSTGRESQL_VERSION=9.1 DB_USERNAME=camunda DB_PASSWORD=camunda DB_NAME=process-engine
+ENV POSTGRESQL_VERSION=9.1 \
+    DB_USERNAME=camunda \
+    DB_PASSWORD=camunda \
+    DB_NAME=process-engine
+ENV POSTGRESQL_VERSION_FULL=${POSTGRESQL_VERSION}.15 \
+    PGDATA=/var/lib/pgsql/${POSTGRESQL_VERSION}/data \
+    PGBIN=/usr/pgsql-${POSTGRESQL_VERSION}/bin
 RUN save-env.sh POSTGRESQL_VERSION DB_USERNAME DB_PASSWORD DB_NAME
+RUN add-path.sh $PGBIN
 
-# add postgresql apt repo
-ADD etc/apt/postgresql.list /etc/apt/sources.list.d/
-RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+# install requirements
+RUN install-packages.sh initscripts
 
 # install packages
-RUN install-packages.sh postgresql-$POSTGRESQL_VERSION
+RUN wget -P /tmp/postgresql \
+      ftp://camunda-ci1/ci/binaries/postgresql/postgresql-${POSTGRESQL_VERSION_FULL}.rhel6.x86_64.rpm \
+      ftp://camunda-ci1/ci/binaries/postgresql/postgresql-libs-${POSTGRESQL_VERSION_FULL}.rhel6.x86_64.rpm \
+      ftp://camunda-ci1/ci/binaries/postgresql/postgresql-server-${POSTGRESQL_VERSION_FULL}.rhel6.x86_64.rpm && \
+    rpm -ivh /tmp/postgresql/*.rpm && \
+    rm -rf /tmp/postgresql
+
+# init database
+RUN su -p postgres -c "${PGBIN}/pg_ctl initdb -w"
 
 # add postgresql config
-ADD etc/postgresql/* /etc/postgresql/$POSTGRESQL_VERSION/main/
-
-# workaround for aufs bug (https://github.com/docker/docker/issues/783)
-RUN mkdir /etc/ssl/private-new && \
-    mv /etc/ssl/private/* /etc/ssl/private-new/ && \
-    rm -rf /etc/ssl/private && \
-    mv /etc/ssl/private-new /etc/ssl/private && \
-    chown -R root:ssl-cert /etc/ssl/private
+ADD etc/postgresql/* ${PGDATA}/
 
 # add postgresql user and create database
-RUN chown -R postgres:postgres /etc/postgresql/$POSTGRESQL_VERSION/main/* && \
-    service postgresql start && \
-    sudo -u postgres psql --command "CREATE USER $DB_USERNAME WITH SUPERUSER PASSWORD '$DB_PASSWORD';" && \
-    sudo -u postgres createdb --owner=$DB_USERNAME --template=template0 --encoding=UTF8 $DB_NAME && \
-    service postgresql stop
+RUN chown -R postgres:postgres ${PGDATA}/* && \
+    su -p postgres -c "${PGBIN}/pg_ctl start -w" && \
+    su -p postgres -c "${PGBIN}/psql --command \"CREATE USER $DB_USERNAME WITH SUPERUSER PASSWORD '$DB_PASSWORD';\"" && \
+    su -p postgres -c "${PGBIN}/createdb --owner=$DB_USERNAME --template=template0 --encoding=UTF8 $DB_NAME" && \
+    su -p postgres -c "${PGBIN}/pg_ctl stop -w"
 
 # add postgresql service to supervisor conifg
-ADD etc/supervisor.d/postgresql.conf /etc/supervisor/conf.d/postgresql.conf
+ADD etc/supervisor.d/postgresql.conf.ini /etc/supervisord.d/postgresql.conf.ini
 
 # add database_ready script
 ADD bin/database_ready /usr/local/bin/database_ready
