@@ -1,7 +1,7 @@
 camunda-ci-postgresql
 ============================
 
-PostgreSQL docker image for Jenkins CI builds base on [camunda-ci-base-ubuntu][].
+PostgreSQL docker image for Jenkins CI builds base on [camunda-ci-base-centos][].
 
 # Additional Packages
 
@@ -23,4 +23,4 @@ PostgreSQL docker image for Jenkins CI builds base on [camunda-ci-base-ubuntu][]
 docker run -d -p 5432:5432 camunda/camunda-docker-ci-postgresql
 ```
 
-[camunda-ci-base-ubuntu]: https://github.com/camunda-ci/camunda-docker-ci-base-ubuntu
+[camunda-ci-base-centos]: https://github.com/camunda-ci/camunda-docker-ci-base-centos
