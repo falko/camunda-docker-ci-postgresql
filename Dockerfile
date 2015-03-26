@@ -1,11 +1,11 @@
 FROM camunda-ci1:5000/camunda-ci-base-centos:latest
 
 # set environment variables for database
-ENV POSTGRESQL_VERSION=9.3 \
+ENV POSTGRESQL_VERSION=9.4 \
     DB_USERNAME=camunda \
     DB_PASSWORD=camunda \
     DB_NAME=process-engine
-ENV POSTGRESQL_VERSION_FULL=${POSTGRESQL_VERSION}.6 \
+ENV POSTGRESQL_VERSION_FULL=${POSTGRESQL_VERSION}.1 \
     PGDATA=/var/lib/pgsql/${POSTGRESQL_VERSION}/data \
     PGBIN=/usr/pgsql-${POSTGRESQL_VERSION}/bin
 RUN save-env.sh POSTGRESQL_VERSION DB_USERNAME DB_PASSWORD DB_NAME
