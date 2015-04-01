@@ -1,6 +1,6 @@
 # image settings for the docker image name, tags and
 # container name while running
-IMAGE_NAME=camunda-ci1:5000/camunda-ci-postgresql
+IMAGE_NAME=camunda-ci1.local:5000/camunda-ci-postgresql
 TAGS=latest 9.4
 NAME=postgresql
 

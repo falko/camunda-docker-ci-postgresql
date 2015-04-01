@@ -1,4 +1,4 @@
-FROM camunda-ci1:5000/camunda-ci-base-centos:latest
+FROM camunda-ci1.local:5000/camunda-ci-base-centos:latest
 
 # set environment variables for database
 ENV POSTGRESQL_VERSION=9.4 \
@@ -13,9 +13,9 @@ RUN add-path.sh $PGBIN
 
 # install packages
 RUN wget -P /tmp/postgresql \
-      ftp://camunda-ci1/ci/binaries/postgresql/postgresql-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm \
-      ftp://camunda-ci1/ci/binaries/postgresql/postgresql-libs-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm \
-      ftp://camunda-ci1/ci/binaries/postgresql/postgresql-server-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm && \
+      ftp://camunda-ci1.local/ci/binaries/postgresql/postgresql-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm \
+      ftp://camunda-ci1.local/ci/binaries/postgresql/postgresql-libs-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm \
+      ftp://camunda-ci1.local/ci/binaries/postgresql/postgresql-server-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm && \
     rpm -ivh /tmp/postgresql/*.rpm && \
     rm -rf /tmp/postgresql
 
