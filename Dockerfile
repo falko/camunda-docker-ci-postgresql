@@ -13,9 +13,9 @@ RUN add-path.sh $PGBIN
 
 # install packages
 RUN wget -P /tmp/postgresql \
-      ftp://ci1.camunda.loc/ci/binaries/postgresql/postgresql-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm \
-      ftp://ci1.camunda.loc/ci/binaries/postgresql/postgresql-libs-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm \
-      ftp://ci1.camunda.loc/ci/binaries/postgresql/postgresql-server-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm && \
+      https://nginx.service.consul/ci/binaries/postgresql/postgresql-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm \
+      https://nginx.service.consul/ci/binaries/postgresql/postgresql-libs-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm \
+      https://nginx.service.consul/ci/binaries/postgresql/postgresql-server-${POSTGRESQL_VERSION_FULL}.rhel7.x86_64.rpm && \
     rpm -ivh /tmp/postgresql/*.rpm && \
     rm -rf /tmp/postgresql
 
