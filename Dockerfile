@@ -1,4 +1,4 @@
-FROM ci1.camunda.loc:5000/camunda-ci-base-centos:latest
+FROM registry.camunda.com/camunda-ci-base-centos:latest
 
 # set environment variables for database
 ENV POSTGRESQL_VERSION=9.3 \
